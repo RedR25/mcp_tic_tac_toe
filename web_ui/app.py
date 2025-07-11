@@ -73,15 +73,18 @@ async def websocket_endpoint(websocket: WebSocket):
             elif action == "make_move":
                 row = message.get("row")
                 col = message.get("col")
-                result = await game_client.make_human_move(row, col)
+                player_symbol = message.get("player_symbol", "X")
+                result = await game_client.make_human_move(row, col, player_symbol)
                 response["result"] = result
                 
                 if "successful" in result.lower() and not any(x in result.lower() for x in ["wins", "draw"]):
-                    ai_result = await game_client.make_ai_move()
+                    ai_symbol = message.get("ai_symbol", "O")
+                    ai_result = await game_client.make_ai_move(ai_symbol)
                     response["ai_result"] = ai_result
                     
             elif action == "ai_move":
-                ai_result = await game_client.make_ai_move()
+                ai_symbol = message.get("ai_symbol", "O")
+                ai_result = await game_client.make_ai_move(ai_symbol)
                 response["result"] = ai_result
                     
             elif action == "reset_game":

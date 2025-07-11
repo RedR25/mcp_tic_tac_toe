@@ -18,14 +18,14 @@ class GameClient:
     async def get_board_state(self) -> str:
         return await self.mcp_client.call_tool("get_board", {})
     
-    async def make_human_move(self, row: int, col: int) -> str:
+    async def make_human_move(self, row: int, col: int, player_symbol: str) -> str:
         return await self.mcp_client.call_tool("make_move", {
             "row": row,
             "col": col,
-            "player": "X"
+            "player": player_symbol
         })
     
-    async def make_ai_move(self) -> str:
+    async def make_ai_move(self, ai_symbol: str) -> str:
         board_state = await self.get_board_state()
         available_moves = await self.mcp_client.call_tool("get_available_moves", {})
         
@@ -47,7 +47,7 @@ class GameClient:
         return await self.mcp_client.call_tool("make_move", {
             "row": row,
             "col": col,
-            "player": "O"
+            "player": ai_symbol
         })
     
     async def reset_game(self) -> str:

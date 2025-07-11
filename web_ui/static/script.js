@@ -231,7 +231,10 @@ class TicTacToeUI {
       this.updateGameStatus("AI is making the first move...");
       this.updateTurnIndicators(this.aiSymbol);
       setTimeout(() => {
-        this.sendMessage({ action: "ai_move" });
+        this.sendMessage({
+          action: "ai_move",
+          ai_symbol: this.aiSymbol,
+        });
       }, 1000);
     }
   }
@@ -243,6 +246,8 @@ class TicTacToeUI {
         action: "make_move",
         row: row,
         col: col,
+        player_symbol: this.playerSymbol,
+        ai_symbol: this.aiSymbol,
       });
     }
   }
@@ -262,7 +267,10 @@ class TicTacToeUI {
       this.updateGameStatus("AI goes first. Waiting for AI move...");
       this.updateTurnIndicators(this.aiSymbol);
       setTimeout(() => {
-        this.sendMessage({ action: "ai_move" });
+        this.sendMessage({
+          action: "ai_move",
+          ai_symbol: this.aiSymbol,
+        });
       }, 1000);
     }
   }

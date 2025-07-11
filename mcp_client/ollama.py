@@ -20,7 +20,9 @@ class OllamaClient:
             "stream": False,
             "options": {
                 "temperature": 0.7,
-                "num_predict": 100
+                "num_predict": 200,  # Increased from 100
+                "top_p": 0.9,
+                "repeat_penalty": 1.1
             }
         }
         
@@ -28,7 +30,7 @@ class OllamaClient:
             response = await self.client.post(
                 f"{self.base_url}/api/chat",
                 json=payload,
-                timeout=30.0
+                timeout=45.0  # Increased timeout
             )
             response.raise_for_status()
             
@@ -83,8 +85,10 @@ Guidelines:
 - Be conversational and relaxed
 - Celebrate good moves and encourage the player
 - Share simple strategies or observations
-- Keep responses brief and engaging
-- Don't be overly formal or robotic"""
+- Keep responses engaging but not too long (2-4 sentences)
+- Don't be robotic
+- You can be playful and use emojis occasionally
+- Always comment on the game situation when relevant"""
         
         return await self.generate(message, system_prompt)
     
