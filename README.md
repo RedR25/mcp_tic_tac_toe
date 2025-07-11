@@ -1,38 +1,19 @@
-```
-mcp-tictactoe/
-├── pyproject.toml
-├── README.md
-├── mcp_server/
-│   ├── __init__.py
-│   ├── protocol.py      # MCP protocol implementation
-│   ├── game.py          # Tic-tac-toe game logic
-│   └── server.py        # Main server entry point
-├── mcp_client/
-│   ├── __init__.py
-│   ├── protocol.py      # MCP client implementation
-│   ├── ollama.py        # Ollama integration
-│   └── client.py        # Main client logic
-├── web_ui/
-│   ├── __init__.py
-│   ├── app.py           # FastAPI application
-│   ├── static/
-│   │   ├── style.css
-│   │   └── script.js
-│   └── templates/
-│       └── index.html
-└── main.py              # Application entry point
-```
-
 # MCP Tic-Tac-Toe
 
 Model Context Protocol implementation for playing tic-tac-toe with Ollama.
+
+## Requirements
+
+- Python 3.11+
+- uv package manager
+- Ollama running on your network
 
 ## Setup
 
 ```bash
 uv sync
-cp .env.example .env
-# Edit .env with your Ollama settings
+cp .env .env.local
+# Edit .env.local with your Ollama settings
 ```
 
 ## Run
@@ -52,7 +33,7 @@ Access the game at `http://localhost:8001`
 
 ## Environment Variables
 
-- `OLLAMA_URL`: Ollama server URL
+- `OLLAMA_URL`: Ollama server URL (default: http://192.168.1.27:11434)
 - `OLLAMA_MODEL`: Model name to use
-- `MCP_SERVER_PORT`: MCP WebSocket port
-- `WEB_UI_PORT`: Web interface port
+- `MCP_SERVER_PORT`: MCP WebSocket port (default: 8000)
+- `WEB_UI_PORT`: Web interface port (default: 8001)
