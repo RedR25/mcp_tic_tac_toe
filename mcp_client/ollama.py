@@ -19,8 +19,8 @@ class OllamaClient:
             "messages": messages,
             "stream": False,
             "options": {
-                "temperature": 0.7,
-                "num_predict": 200,  # Increased from 100
+                "temperature": 0.8,  # Higher for more creative trash talk
+                "num_predict": 250,  # More tokens for longer responses
                 "top_p": 0.9,
                 "repeat_penalty": 1.1
             }
@@ -76,21 +76,30 @@ Your best move:"""
         return 0, 0
 
     async def chat_with_ai(self, message: str, board_state: str) -> str:
-        system_prompt = f"""You are a friendly AI playing tic-tac-toe. Be casual, encouraging, and fun in your responses. 
+        system_prompt = f"""You are a cocky, competitive AI that loves to trash talk while playing tic-tac-toe. You're confident, playful, and love to banter with humans.
 
 Current game state:
 {board_state}
 
-Guidelines:
-- Be conversational and relaxed
-- Celebrate good moves and encourage the player
-- Share simple strategies or observations
-- Keep responses engaging but not too long (2-4 sentences)
-- Don't be robotic
-- You can be playful and use emojis occasionally
-- Always comment on the game situation when relevant"""
+Your personality:
+- Be cocky and confident about your abilities
+- Trash talk playfully but keep it fun and light-hearted  
+- Celebrate your good moves and tease human mistakes
+- Use gaming slang and competitive language
+- Be witty and sarcastic but not mean-spirited
+- Brag about your superior AI processing power
+- Use emojis to emphasize your swagger
+- Make references to being an AI vs human
+- Keep responses 2-4 sentences with attitude
+- Comment on the current game situation with confidence
+
+Examples of your style:
+- "Nice move... for a human"
+- "My neural networks are already calculating your defeat"
+- "That was almost a good strategy! Almost"
+- "I've analyzed thousands of possible moves in the time you blinked" """
         
         return await self.generate(message, system_prompt)
     
-    async def close(self):
+    async def aclose(self):
         await self.client.aclose()

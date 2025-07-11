@@ -13,7 +13,7 @@ class GameClient:
     
     async def disconnect(self):
         await self.mcp_client.disconnect()
-        await self.ollama_client.close()
+        await self.ollama_client.aclose()
     
     async def get_board_state(self) -> str:
         return await self.mcp_client.call_tool("get_board", {})
