@@ -8,46 +8,102 @@
   </head>
   <body>
     <div class="container">
-      <h1>MCP Tic-Tac-Toe</h1>
+      <header>
+        <h1>🎮 Tic-Tac-Toe vs AI</h1>
+        <p class="subtitle">Play against an intelligent AI powered by Ollama</p>
+      </header>
 
-      <div class="game-section">
-        <div class="game-setup">
-          <label for="player-choice">Choose your symbol:</label>
-          <select id="player-choice">
-            <option value="X">X (go first)</option>
-            <option value="O">O (go second)</option>
-          </select>
-          <button id="start-game-btn">Start New Game</button>
+      <div class="game-area">
+        <div class="game-panel">
+          <!-- Game Setup Card -->
+          <div class="card setup-card" id="setup-card">
+            <h3>🚀 Start New Game</h3>
+            <div class="symbol-choice">
+              <label>Choose your symbol:</label>
+              <div class="symbol-buttons">
+                <button class="symbol-btn active" data-symbol="X">
+                  <span class="symbol">X</span>
+                  <span class="turn-info">You go first</span>
+                </button>
+                <button class="symbol-btn" data-symbol="O">
+                  <span class="symbol">O</span>
+                  <span class="turn-info">AI goes first</span>
+                </button>
+              </div>
+            </div>
+            <button id="start-game-btn" class="primary-btn">Start Game</button>
+          </div>
+
+          <!-- Game Status Card -->
+          <div class="card status-card" id="status-card" style="display: none">
+            <div class="game-info">
+              <div class="players">
+                <div class="player" id="human-player">
+                  <span class="player-symbol">X</span>
+                  <span class="player-name">You</span>
+                  <div class="turn-indicator" id="human-turn"></div>
+                </div>
+                <div class="vs">VS</div>
+                <div class="player" id="ai-player">
+                  <span class="player-symbol">O</span>
+                  <span class="player-name">AI</span>
+                  <div class="turn-indicator" id="ai-turn"></div>
+                </div>
+              </div>
+              <div id="game-status">Your turn!</div>
+            </div>
+            <div class="game-controls">
+              <button id="new-game-btn" class="secondary-btn">New Game</button>
+              <button id="reset-btn" class="secondary-btn">Reset</button>
+            </div>
+          </div>
+
+          <!-- Game Board -->
+          <div class="board-container">
+            <div class="board" id="board">
+              <div class="cell" data-row="0" data-col="0"></div>
+              <div class="cell" data-row="0" data-col="1"></div>
+              <div class="cell" data-row="0" data-col="2"></div>
+              <div class="cell" data-row="1" data-col="0"></div>
+              <div class="cell" data-row="1" data-col="1"></div>
+              <div class="cell" data-row="1" data-col="2"></div>
+              <div class="cell" data-row="2" data-col="0"></div>
+              <div class="cell" data-row="2" data-col="1"></div>
+              <div class="cell" data-row="2" data-col="2"></div>
+            </div>
+            <div class="board-overlay" id="board-overlay">
+              <div class="overlay-content">
+                <p>👆 Choose your symbol and start a game!</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="board" id="board">
-          <div class="cell" data-row="0" data-col="0"></div>
-          <div class="cell" data-row="0" data-col="1"></div>
-          <div class="cell" data-row="0" data-col="2"></div>
-          <div class="cell" data-row="1" data-col="0"></div>
-          <div class="cell" data-row="1" data-col="1"></div>
-          <div class="cell" data-row="1" data-col="2"></div>
-          <div class="cell" data-row="2" data-col="0"></div>
-          <div class="cell" data-row="2" data-col="1"></div>
-          <div class="cell" data-row="2" data-col="2"></div>
-        </div>
-
-        <div class="game-info">
-          <div id="game-status">Choose your symbol and start!</div>
-          <button id="reset-btn">Reset Game</button>
-        </div>
-      </div>
-
-      <div class="chat-section">
-        <h3>Chat with AI</h3>
-        <div id="chat-messages"></div>
-        <div class="chat-input">
-          <input
-            type="text"
-            id="chat-input"
-            placeholder="Say something to the AI..."
-          />
-          <button id="send-btn">Send</button>
+        <!-- Chat Panel -->
+        <div class="chat-panel">
+          <div class="card chat-card">
+            <h3>💬 Chat with AI</h3>
+            <div id="chat-messages">
+              <div class="welcome-message">
+                <p>👋 Hi! I'm your AI opponent. Let's play some tic-tac-toe!</p>
+                <p>
+                  Feel free to ask me about strategy, rules, or just chat while
+                  we play.
+                </p>
+              </div>
+            </div>
+            <div class="chat-input-container">
+              <input
+                type="text"
+                id="chat-input"
+                placeholder="Type a message to the AI..."
+                disabled
+              />
+              <button id="send-btn" disabled>
+                <span>📤</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -55,10 +111,16 @@
     <!-- Game Over Modal -->
     <div id="game-over-modal" class="modal">
       <div class="modal-content">
-        <div id="game-result"></div>
-        <div class="modal-buttons">
-          <button id="play-again-btn">Play Again</button>
-          <button id="close-modal-btn">Close</button>
+        <div class="modal-header">
+          <div id="game-result-icon"></div>
+          <div id="game-result-text"></div>
+        </div>
+        <div class="modal-body">
+          <p id="game-result-message"></p>
+        </div>
+        <div class="modal-footer">
+          <button id="play-again-btn" class="primary-btn">Play Again</button>
+          <button id="close-modal-btn" class="secondary-btn">Close</button>
         </div>
       </div>
     </div>

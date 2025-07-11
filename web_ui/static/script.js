@@ -15,6 +15,7 @@ class TicTacToeUI {
     this.connectWebSocket();
     this.setupEventListeners();
     this.updateBoard();
+    this.updateUIState();
   }
 
   connectWebSocket() {
@@ -41,6 +42,23 @@ class TicTacToeUI {
   }
 
   setupEventListeners() {
+    // Symbol selection
+    document.querySelectorAll(".symbol-btn").forEach((btn) => {
+      btn.addEventListener("click", (e) => {
+        e.preventDefault();
+        document
+          .querySelectorAll(".symbol-btn")
+          .forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        this.playerSymbol = btn.dataset.symbol;
+        this.aiSymbol = this.playerSymbol === "X" ? "O" : "X";
+        console.log(
+          `Selected symbol: ${this.playerSymbol}, AI will be: ${this.aiSymbol}`
+        );
+      });
+    });
+
+    // Game board clicks
     document.getElementById("board").addEventListener("click", (e) => {
       if (
         e.target.classList.contains("cell") &&
@@ -49,43 +67,157 @@ class TicTacToeUI {
       ) {
         const row = parseInt(e.target.dataset.row);
         const col = parseInt(e.target.dataset.col);
-        this.makeMove(row, col);
+        if (!isNaN(row) && !isNaN(col) && this.board[row][col] === "") {
+          console.log(`Making move at ${row}, ${col}`);
+          this.makeMove(row, col);
+        }
       }
     });
 
-    document.getElementById("start-game-btn").addEventListener("click", () => {
-      this.startNewGame();
-    });
+    // Game controls
+    const startBtn = document.getElementById("start-game-btn");
+    if (startBtn) {
+      startBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        console.log("Start game clicked");
+        this.startNewGame();
+      });
+    }
 
-    document.getElementById("reset-btn").addEventListener("click", () => {
-      this.resetGame();
-    });
+    const newGameBtn = document.getElementById("new-game-btn");
+    if (newGameBtn) {
+      newGameBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        console.log("New game clicked");
+        this.showSetup();
+      });
+    }
 
-    document.getElementById("send-btn").addEventListener("click", () => {
-      this.sendChatMessage();
-    });
+    const resetBtn = document.getElementById("reset-btn");
+    if (resetBtn) {
+      resetBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        console.log("Reset clicked");
+        this.resetGame();
+      });
+    }
 
-    document.getElementById("chat-input").addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
+    // Chat
+    const sendBtn = document.getElementById("send-btn");
+    if (sendBtn) {
+      sendBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        console.log("Send clicked");
         this.sendChatMessage();
+      });
+    }
+
+    const chatInput = document.getElementById("chat-input");
+    if (chatInput) {
+      chatInput.addEventListener("keypress", (e) => {
+        if (e.key === "Enter" && !chatInput.disabled) {
+          e.preventDefault();
+          console.log("Enter pressed in chat");
+          this.sendChatMessage();
+        }
+      });
+    }
+
+    // Modal controls
+    const playAgainBtn = document.getElementById("play-again-btn");
+    if (playAgainBtn) {
+      playAgainBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        console.log("Play again clicked");
+        this.closeModal();
+        this.showSetup();
+      });
+    }
+
+    const closeModalBtn = document.getElementById("close-modal-btn");
+    if (closeModalBtn) {
+      closeModalBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        console.log("Close modal clicked");
+        this.closeModal();
+      });
+    }
+  }
+
+  updateUIState() {
+    const setupCard = document.getElementById("setup-card");
+    const statusCard = document.getElementById("status-card");
+    const boardOverlay = document.getElementById("board-overlay");
+    const chatInput = document.getElementById("chat-input");
+    const sendBtn = document.getElementById("send-btn");
+
+    console.log("Updating UI state. Game started:", this.gameStarted);
+
+    if (!this.gameStarted) {
+      if (setupCard) setupCard.style.display = "block";
+      if (statusCard) statusCard.style.display = "none";
+      if (boardOverlay) boardOverlay.style.display = "flex";
+      if (chatInput) {
+        chatInput.disabled = true;
+        chatInput.placeholder = "Start a game to chat with AI...";
       }
-    });
+      if (sendBtn) sendBtn.disabled = true;
+    } else {
+      if (setupCard) setupCard.style.display = "none";
+      if (statusCard) statusCard.style.display = "block";
+      if (boardOverlay) boardOverlay.style.display = "none";
+      if (chatInput) {
+        chatInput.disabled = false;
+        chatInput.placeholder = "Type a message to the AI...";
+      }
+      if (sendBtn) sendBtn.disabled = false;
+    }
 
-    document.getElementById("play-again-btn").addEventListener("click", () => {
-      this.closeModal();
-      this.startNewGame();
-    });
+    // Update player symbols in status
+    const humanPlayerSymbol = document
+      .getElementById("human-player")
+      ?.querySelector(".player-symbol");
+    const aiPlayerSymbol = document
+      .getElementById("ai-player")
+      ?.querySelector(".player-symbol");
 
-    document.getElementById("close-modal-btn").addEventListener("click", () => {
-      this.closeModal();
-    });
+    if (humanPlayerSymbol) humanPlayerSymbol.textContent = this.playerSymbol;
+    if (aiPlayerSymbol) aiPlayerSymbol.textContent = this.aiSymbol;
+  }
+
+  updateTurnIndicators(currentPlayer) {
+    const humanTurn = document.getElementById("human-turn");
+    const aiTurn = document.getElementById("ai-turn");
+
+    if (humanTurn && aiTurn) {
+      humanTurn.classList.toggle("active", currentPlayer === this.playerSymbol);
+      aiTurn.classList.toggle("active", currentPlayer === this.aiSymbol);
+    }
+  }
+
+  updateGameStatus(status) {
+    const statusElement = document.getElementById("game-status");
+    if (statusElement) {
+      statusElement.textContent = status;
+      console.log("Status updated:", status);
+    }
+  }
+
+  showSetup() {
+    this.gameStarted = false;
+    this.gameOver = false;
+    this.board = Array(3)
+      .fill()
+      .map(() => Array(3).fill(""));
+    this.updateBoard();
+    this.updateUIState();
+    this.sendMessage({ action: "reset_game" });
   }
 
   startNewGame() {
-    const playerChoice = document.getElementById("player-choice").value;
-    this.playerSymbol = playerChoice;
-    this.aiSymbol = playerChoice === "X" ? "O" : "X";
     this.gameStarted = true;
+    this.gameOver = false;
+    this.updateUIState();
 
     this.sendMessage({
       action: "start_game",
@@ -93,9 +225,11 @@ class TicTacToeUI {
     });
 
     if (this.playerSymbol === "X") {
-      this.updateGameStatus("Your turn!");
+      this.updateGameStatus("Your turn! Click a cell to make your move.");
+      this.updateTurnIndicators(this.playerSymbol);
     } else {
       this.updateGameStatus("AI is making the first move...");
+      this.updateTurnIndicators(this.aiSymbol);
       setTimeout(() => {
         this.sendMessage({ action: "ai_move" });
       }, 1000);
@@ -103,7 +237,8 @@ class TicTacToeUI {
   }
 
   makeMove(row, col) {
-    if (this.board[row][col] === "" && this.gameStarted) {
+    if (this.board[row][col] === "" && this.gameStarted && !this.gameOver) {
+      this.updateGameStatus("Processing your move...");
       this.sendMessage({
         action: "make_move",
         row: row,
@@ -113,14 +248,35 @@ class TicTacToeUI {
   }
 
   resetGame() {
-    this.gameStarted = false;
     this.sendMessage({ action: "reset_game" });
+    this.gameOver = false;
+    this.board = Array(3)
+      .fill()
+      .map(() => Array(3).fill(""));
+    this.updateBoard();
+
+    if (this.playerSymbol === "X") {
+      this.updateGameStatus("Your turn! Click a cell to make your move.");
+      this.updateTurnIndicators(this.playerSymbol);
+    } else {
+      this.updateGameStatus("AI goes first. Waiting for AI move...");
+      this.updateTurnIndicators(this.aiSymbol);
+      setTimeout(() => {
+        this.sendMessage({ action: "ai_move" });
+      }, 1000);
+    }
   }
 
   sendChatMessage() {
     const input = document.getElementById("chat-input");
+    if (!input || input.disabled) {
+      console.log("Chat input is disabled or not found");
+      return;
+    }
+
     const message = input.value.trim();
     if (message) {
+      console.log("Sending chat message:", message);
       this.addChatMessage(message, "user");
       this.sendMessage({
         action: "chat",
@@ -140,19 +296,18 @@ class TicTacToeUI {
     switch (data.action) {
       case "start_game":
       case "reset_game":
-        this.gameOver = false;
-        this.board = Array(3)
-          .fill()
-          .map(() => Array(3).fill(""));
-        this.updateBoard();
-        this.updateGameStatus(data.status || "Game ready!");
+        if (data.result) {
+          this.parseBoardState(data.result);
+        }
         break;
       case "make_move":
         this.parseBoardState(data.result);
-        if (data.ai_result) {
+        if (data.ai_result && !this.gameOver) {
+          this.updateGameStatus("AI is thinking...");
+          this.updateTurnIndicators(this.aiSymbol);
           setTimeout(() => {
             this.parseBoardState(data.ai_result);
-          }, 500);
+          }, 800);
         }
         break;
       case "ai_move":
@@ -185,60 +340,82 @@ class TicTacToeUI {
 
     if (boardText.includes("wins") || boardText.includes("draw")) {
       this.gameOver = true;
-      let resultText = "";
-      let resultClass = "";
-
-      if (boardText.includes("x_wins")) {
-        if (this.playerSymbol === "X") {
-          resultText = "🎉 You Win! 🎉";
-          resultClass = "win";
-        } else {
-          resultText = "😞 You Lost! 😞";
-          resultClass = "lose";
-        }
-      } else if (boardText.includes("o_wins")) {
-        if (this.playerSymbol === "O") {
-          resultText = "🎉 You Win! 🎉";
-          resultClass = "win";
-        } else {
-          resultText = "😞 You Lost! 😞";
-          resultClass = "lose";
-        }
-      } else if (boardText.includes("draw")) {
-        resultText = "🤝 It's a Draw! 🤝";
-        resultClass = "draw";
-      }
-
-      this.showGameOverModal(resultText, resultClass);
-      this.highlightWinningCells(boardText);
+      this.handleGameEnd(boardText);
     } else if (boardText.includes(`Current player: ${this.aiSymbol}`)) {
       this.updateGameStatus("AI is thinking...");
+      this.updateTurnIndicators(this.aiSymbol);
     } else if (boardText.includes(`Current player: ${this.playerSymbol}`)) {
-      this.updateGameStatus("Your turn!");
+      this.updateGameStatus("Your turn! Click a cell to make your move.");
+      this.updateTurnIndicators(this.playerSymbol);
     }
   }
 
-  highlightWinningCells(boardText) {
-    // Simple winning line detection - could be enhanced
-    const cells = document.querySelectorAll(".cell");
-    cells.forEach((cell) => {
-      if (cell.textContent && boardText.includes("wins")) {
-        cell.classList.add("winning");
+  handleGameEnd(boardText) {
+    let resultIcon = "";
+    let resultText = "";
+    let resultMessage = "";
+
+    if (boardText.includes("x_wins")) {
+      if (this.playerSymbol === "X") {
+        resultIcon = "🎉";
+        resultText = "You Win!";
+        resultMessage = "Congratulations! You beat the AI!";
+      } else {
+        resultIcon = "😞";
+        resultText = "You Lost!";
+        resultMessage = "The AI won this round. Better luck next time!";
       }
-    });
-  }
+    } else if (boardText.includes("o_wins")) {
+      if (this.playerSymbol === "O") {
+        resultIcon = "🎉";
+        resultText = "You Win!";
+        resultMessage = "Congratulations! You beat the AI!";
+      } else {
+        resultIcon = "😞";
+        resultText = "You Lost!";
+        resultMessage = "The AI won this round. Better luck next time!";
+      }
+    } else if (boardText.includes("draw")) {
+      resultIcon = "🤝";
+      resultText = "It's a Draw!";
+      resultMessage = "Great game! You both played well.";
+    }
 
-  showGameOverModal(resultText, resultClass) {
-    const modal = document.getElementById("game-over-modal");
-    const gameResult = document.getElementById("game-result");
-
-    gameResult.textContent = resultText;
-    gameResult.className = resultClass;
-    modal.style.display = "block";
+    this.updateGameStatus("Game Over!");
+    this.updateTurnIndicators("none");
+    this.highlightWinningCells(boardText);
 
     setTimeout(() => {
-      modal.style.animation = "fadeIn 0.3s ease";
-    }, 10);
+      this.showGameOverModal(resultIcon, resultText, resultMessage);
+    }, 1000);
+  }
+
+  highlightWinningCells(boardText) {
+    if (boardText.includes("wins")) {
+      const cells = document.querySelectorAll(".cell");
+      cells.forEach((cell) => {
+        if (cell.textContent && cell.textContent.trim() !== "") {
+          // Simple highlighting - in a real game you'd detect the actual winning line
+          const winner = boardText.includes("x_wins") ? "X" : "O";
+          if (cell.textContent === winner) {
+            cell.classList.add("winning");
+          }
+        }
+      });
+    }
+  }
+
+  showGameOverModal(icon, text, message) {
+    const modal = document.getElementById("game-over-modal");
+    const resultIcon = document.getElementById("game-result-icon");
+    const resultText = document.getElementById("game-result-text");
+    const resultMessage = document.getElementById("game-result-message");
+
+    resultIcon.textContent = icon;
+    resultText.textContent = text;
+    resultMessage.textContent = message;
+
+    modal.style.display = "block";
   }
 
   closeModal() {
@@ -257,10 +434,11 @@ class TicTacToeUI {
       const row = Math.floor(index / 3);
       const col = index % 3;
       cell.textContent = this.board[row][col];
-      cell.classList.toggle(
-        "disabled",
-        this.gameOver || this.board[row][col] !== "" || !this.gameStarted
-      );
+
+      const isEmpty = this.board[row][col] === "";
+      const canPlay = this.gameStarted && !this.gameOver && isEmpty;
+
+      cell.classList.toggle("disabled", !canPlay);
     });
   }
 
