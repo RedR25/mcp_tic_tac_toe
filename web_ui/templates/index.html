@@ -11,6 +11,15 @@
       <h1>MCP Tic-Tac-Toe</h1>
 
       <div class="game-section">
+        <div class="game-setup">
+          <label for="player-choice">Choose your symbol:</label>
+          <select id="player-choice">
+            <option value="X">X (go first)</option>
+            <option value="O">O (go second)</option>
+          </select>
+          <button id="start-game-btn">Start New Game</button>
+        </div>
+
         <div class="board" id="board">
           <div class="cell" data-row="0" data-col="0"></div>
           <div class="cell" data-row="0" data-col="1"></div>
@@ -24,7 +33,7 @@
         </div>
 
         <div class="game-info">
-          <div id="game-status">Your turn (X)</div>
+          <div id="game-status">Choose your symbol and start!</div>
           <button id="reset-btn">Reset Game</button>
         </div>
       </div>
@@ -39,6 +48,17 @@
             placeholder="Say something to the AI..."
           />
           <button id="send-btn">Send</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Game Over Modal -->
+    <div id="game-over-modal" class="modal">
+      <div class="modal-content">
+        <div id="game-result"></div>
+        <div class="modal-buttons">
+          <button id="play-again-btn">Play Again</button>
+          <button id="close-modal-btn">Close</button>
         </div>
       </div>
     </div>

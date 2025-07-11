@@ -61,7 +61,12 @@ async def websocket_endpoint(websocket: WebSocket):
             action = message.get("action")
             response = {"action": action}
             
-            if action == "get_board":
+            if action == "start_game":
+                player_symbol = message.get("player_symbol", "X")
+                await game_client.reset_game()
+                response["status"] = f"New game started! You are {player_symbol}"
+                
+            elif action == "get_board":
                 board_state = await game_client.get_board_state()
                 response["board_state"] = board_state
                 
@@ -71,13 +76,18 @@ async def websocket_endpoint(websocket: WebSocket):
                 result = await game_client.make_human_move(row, col)
                 response["result"] = result
                 
-                if "successful" in result.lower():
+                if "successful" in result.lower() and not any(x in result.lower() for x in ["wins", "draw"]):
                     ai_result = await game_client.make_ai_move()
                     response["ai_result"] = ai_result
+                    
+            elif action == "ai_move":
+                ai_result = await game_client.make_ai_move()
+                response["result"] = ai_result
                     
             elif action == "reset_game":
                 result = await game_client.reset_game()
                 response["result"] = result
+                response["status"] = "Game reset! Choose your symbol and start a new game."
                 
             elif action == "chat":
                 message_text = message.get("message", "")

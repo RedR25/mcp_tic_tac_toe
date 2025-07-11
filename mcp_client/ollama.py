@@ -40,6 +40,7 @@ class OllamaClient:
     async def generate_move(self, board_state: str, available_moves: str) -> Tuple[int, int]:
         system_prompt = """You are playing tic-tac-toe as player O. 
 Analyze the board and choose the best move from available positions.
+Think strategically: block opponent wins, create your own winning opportunities, take center/corners.
 Respond with only the row and column numbers (0-2) separated by a comma.
 Example: 1,2"""
         
@@ -48,7 +49,7 @@ Example: 1,2"""
 
 Available moves (row,col): {available_moves}
 
-Choose your move:"""
+Your best move:"""
         
         response = await self.generate(prompt, system_prompt)
         
@@ -71,6 +72,21 @@ Choose your move:"""
             pass
         
         return 0, 0
+
+    async def chat_with_ai(self, message: str, board_state: str) -> str:
+        system_prompt = f"""You are a friendly AI playing tic-tac-toe. Be casual, encouraging, and fun in your responses. 
+
+Current game state:
+{board_state}
+
+Guidelines:
+- Be conversational and relaxed
+- Celebrate good moves and encourage the player
+- Share simple strategies or observations
+- Keep responses brief and engaging
+- Don't be overly formal or robotic"""
+        
+        return await self.generate(message, system_prompt)
     
     async def close(self):
         await self.client.aclose()

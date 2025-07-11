@@ -43,6 +43,46 @@ h1 {
   gap: 20px;
 }
 
+.game-setup {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  background: #16213e;
+  padding: 20px;
+  border-radius: 12px;
+  width: 100%;
+}
+
+.game-setup label {
+  color: #eee;
+  font-weight: bold;
+}
+
+.game-setup select {
+  background: #0f3460;
+  color: #eee;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+#start-game-btn {
+  background: linear-gradient(45deg, #533483, #0f3460);
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.2s ease;
+}
+
+#start-game-btn:hover {
+  transform: translateY(-2px);
+}
+
 .board {
   display: grid;
   grid-template-columns: repeat(3, 100px);
@@ -78,6 +118,23 @@ h1 {
   opacity: 0.6;
 }
 
+.cell.winning {
+  background: #4caf50;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
 .game-info {
   text-align: center;
 }
@@ -86,6 +143,7 @@ h1 {
   font-size: 1.2rem;
   margin-bottom: 15px;
   color: #eee;
+  font-weight: bold;
 }
 
 #reset-btn {
@@ -177,6 +235,68 @@ h1 {
   transform: translateY(-2px);
 }
 
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  animation: fadeIn 0.3s ease;
+}
+
+.modal-content {
+  background: linear-gradient(135deg, #16213e, #0f3460);
+  margin: 15% auto;
+  padding: 40px;
+  border-radius: 20px;
+  width: 90%;
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  border: 2px solid #533483;
+}
+
+#game-result {
+  font-size: 2rem;
+  font-weight: bold;
+  margin-bottom: 30px;
+  color: #eee;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.modal-buttons button {
+  background: linear-gradient(45deg, #533483, #0f3460);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: transform 0.2s ease;
+}
+
+.modal-buttons button:hover {
+  transform: translateY(-2px);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @media (max-width: 768px) {
   .container {
     grid-template-columns: 1fr;
@@ -194,5 +314,14 @@ h1 {
 
   h1 {
     font-size: 2rem;
+  }
+
+  .modal-content {
+    margin: 25% auto;
+    padding: 30px;
+  }
+
+  #game-result {
+    font-size: 1.5rem;
   }
 }

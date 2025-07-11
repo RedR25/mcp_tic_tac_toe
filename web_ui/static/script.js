@@ -5,6 +5,9 @@ class TicTacToeUI {
       .fill()
       .map(() => Array(3).fill(""));
     this.gameOver = false;
+    this.playerSymbol = "X";
+    this.aiSymbol = "O";
+    this.gameStarted = false;
     this.init();
   }
 
@@ -20,7 +23,6 @@ class TicTacToeUI {
 
     this.ws.onopen = () => {
       console.log("Connected to server");
-      this.requestBoardState();
     };
 
     this.ws.onmessage = (event) => {
@@ -40,11 +42,19 @@ class TicTacToeUI {
 
   setupEventListeners() {
     document.getElementById("board").addEventListener("click", (e) => {
-      if (e.target.classList.contains("cell") && !this.gameOver) {
+      if (
+        e.target.classList.contains("cell") &&
+        !this.gameOver &&
+        this.gameStarted
+      ) {
         const row = parseInt(e.target.dataset.row);
         const col = parseInt(e.target.dataset.col);
         this.makeMove(row, col);
       }
+    });
+
+    document.getElementById("start-game-btn").addEventListener("click", () => {
+      this.startNewGame();
     });
 
     document.getElementById("reset-btn").addEventListener("click", () => {
@@ -60,10 +70,40 @@ class TicTacToeUI {
         this.sendChatMessage();
       }
     });
+
+    document.getElementById("play-again-btn").addEventListener("click", () => {
+      this.closeModal();
+      this.startNewGame();
+    });
+
+    document.getElementById("close-modal-btn").addEventListener("click", () => {
+      this.closeModal();
+    });
+  }
+
+  startNewGame() {
+    const playerChoice = document.getElementById("player-choice").value;
+    this.playerSymbol = playerChoice;
+    this.aiSymbol = playerChoice === "X" ? "O" : "X";
+    this.gameStarted = true;
+
+    this.sendMessage({
+      action: "start_game",
+      player_symbol: this.playerSymbol,
+    });
+
+    if (this.playerSymbol === "X") {
+      this.updateGameStatus("Your turn!");
+    } else {
+      this.updateGameStatus("AI is making the first move...");
+      setTimeout(() => {
+        this.sendMessage({ action: "ai_move" });
+      }, 1000);
+    }
   }
 
   makeMove(row, col) {
-    if (this.board[row][col] === "") {
+    if (this.board[row][col] === "" && this.gameStarted) {
       this.sendMessage({
         action: "make_move",
         row: row,
@@ -73,6 +113,7 @@ class TicTacToeUI {
   }
 
   resetGame() {
+    this.gameStarted = false;
     this.sendMessage({ action: "reset_game" });
   }
 
@@ -89,10 +130,6 @@ class TicTacToeUI {
     }
   }
 
-  requestBoardState() {
-    this.sendMessage({ action: "get_board" });
-  }
-
   sendMessage(message) {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.send(JSON.stringify(message));
@@ -101,22 +138,25 @@ class TicTacToeUI {
 
   handleServerMessage(data) {
     switch (data.action) {
-      case "get_board":
-        this.parseBoardState(data.board_state);
-        break;
-      case "make_move":
-        this.parseBoardState(data.result);
-        if (data.ai_result) {
-          this.parseBoardState(data.ai_result);
-        }
-        break;
+      case "start_game":
       case "reset_game":
         this.gameOver = false;
         this.board = Array(3)
           .fill()
           .map(() => Array(3).fill(""));
         this.updateBoard();
-        this.updateGameStatus("Your turn (X)");
+        this.updateGameStatus(data.status || "Game ready!");
+        break;
+      case "make_move":
+        this.parseBoardState(data.result);
+        if (data.ai_result) {
+          setTimeout(() => {
+            this.parseBoardState(data.ai_result);
+          }, 500);
+        }
+        break;
+      case "ai_move":
+        this.parseBoardState(data.result);
         break;
       case "chat":
         this.addChatMessage(data.reply, "ai");
@@ -145,18 +185,70 @@ class TicTacToeUI {
 
     if (boardText.includes("wins") || boardText.includes("draw")) {
       this.gameOver = true;
+      let resultText = "";
+      let resultClass = "";
+
       if (boardText.includes("x_wins")) {
-        this.updateGameStatus("You win!");
+        if (this.playerSymbol === "X") {
+          resultText = "🎉 You Win! 🎉";
+          resultClass = "win";
+        } else {
+          resultText = "😞 You Lost! 😞";
+          resultClass = "lose";
+        }
       } else if (boardText.includes("o_wins")) {
-        this.updateGameStatus("AI wins!");
+        if (this.playerSymbol === "O") {
+          resultText = "🎉 You Win! 🎉";
+          resultClass = "win";
+        } else {
+          resultText = "😞 You Lost! 😞";
+          resultClass = "lose";
+        }
       } else if (boardText.includes("draw")) {
-        this.updateGameStatus("Draw!");
+        resultText = "🤝 It's a Draw! 🤝";
+        resultClass = "draw";
       }
-    } else if (boardText.includes("Current player: O")) {
+
+      this.showGameOverModal(resultText, resultClass);
+      this.highlightWinningCells(boardText);
+    } else if (boardText.includes(`Current player: ${this.aiSymbol}`)) {
       this.updateGameStatus("AI is thinking...");
-    } else {
-      this.updateGameStatus("Your turn (X)");
+    } else if (boardText.includes(`Current player: ${this.playerSymbol}`)) {
+      this.updateGameStatus("Your turn!");
     }
+  }
+
+  highlightWinningCells(boardText) {
+    // Simple winning line detection - could be enhanced
+    const cells = document.querySelectorAll(".cell");
+    cells.forEach((cell) => {
+      if (cell.textContent && boardText.includes("wins")) {
+        cell.classList.add("winning");
+      }
+    });
+  }
+
+  showGameOverModal(resultText, resultClass) {
+    const modal = document.getElementById("game-over-modal");
+    const gameResult = document.getElementById("game-result");
+
+    gameResult.textContent = resultText;
+    gameResult.className = resultClass;
+    modal.style.display = "block";
+
+    setTimeout(() => {
+      modal.style.animation = "fadeIn 0.3s ease";
+    }, 10);
+  }
+
+  closeModal() {
+    const modal = document.getElementById("game-over-modal");
+    modal.style.display = "none";
+
+    // Remove winning highlights
+    document.querySelectorAll(".cell").forEach((cell) => {
+      cell.classList.remove("winning");
+    });
   }
 
   updateBoard() {
@@ -167,7 +259,7 @@ class TicTacToeUI {
       cell.textContent = this.board[row][col];
       cell.classList.toggle(
         "disabled",
-        this.gameOver || this.board[row][col] !== ""
+        this.gameOver || this.board[row][col] !== "" || !this.gameStarted
       );
     });
   }

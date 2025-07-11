@@ -1,7 +1,7 @@
 import asyncio
 import json
-from .protocol import MCPClient
-from .ollama import OllamaClient
+from mcp_client.protocol import MCPClient
+from mcp_client.ollama import OllamaClient
 
 class GameClient:
     def __init__(self, mcp_url: str, ollama_url: str, ollama_model: str):
@@ -55,13 +55,7 @@ class GameClient:
     
     async def chat_with_ai(self, message: str) -> str:
         board_state = await self.get_board_state()
-        
-        system_prompt = f"""You are playing tic-tac-toe. Current board state:
-{board_state}
-
-Respond conversationally about the game state and your strategy."""
-        
-        return await self.ollama_client.generate(message, system_prompt)
+        return await self.ollama_client.chat_with_ai(message, board_state)
     
     async def __aenter__(self):
         await self.connect()
